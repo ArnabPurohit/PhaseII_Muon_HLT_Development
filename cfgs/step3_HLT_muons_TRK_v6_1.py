@@ -60,7 +60,7 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
                             #fileNames = cms.untracked.vstring(options.inputFiles),
                             fileNames = cms.untracked.vstring(
-                                '/store/mc/RunIIAutumn18DR/DYJetsToMuMu_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/GEN-SIM-DIGI-RAW/PUPoissonAve32_102X_upgrade2018_realistic_v15-v1/70000/0053E36B-36A3-144E-966E-8548DC9EAB1B.root'
+                                '/store/mc/Phase2HLTTDRWinter20DIGI/DYToLL_M-50_TuneCP5_14TeV-pythia8/GEN-SIM-DIGI-RAW/PU140_pilot_110X_mcRun4_realistic_v3-v2/230000/000E2A75-B208-334E-A477-61AFFAF0AAC4.root'
                                # 'file:/depot/cms/hmm/hlt/dy_phase2_pu200_miniaod.root'
 #'root://xrootd-cms.infn.it//store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/NoPU_pilot_111X_mcRun4_realistic_T15_v1-v1/100000/0364B2E5-BD04-3B43-A4C5-C46764D4FD10.root',
 #'root://xrootd-cms.infn.it//store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/NoPU_pilot_111X_mcRun4_realistic_T15_v1-v1/100000/AF77CC06-1AA0-624E-9AC0-E1FAB6406E0F.root',
@@ -6397,6 +6397,57 @@ process.HLTIter2PSetTrajectoryFilterIT = cms.PSet(
   maxLostHits = cms.int32( 1 )
 )
 
+
+from RecoMuon.TrackingTools.MuonServiceProxy_cff import *
+
+process.dump = cms.EDAnalyzer('EventContentAnalyzer')
+process.MessageLogger = cms.Service("MessageLogger",
+       debugModules = cms.untracked.vstring('MultiTrackValidator')
+)
+
+process.muonNtuples = cms.EDAnalyzer("MuonNtuples",
+                   MuonServiceProxy,
+                   offlineVtx               = cms.InputTag("offlinePrimaryVertices"),
+                   offlineMuons             = cms.InputTag("muons"),
+                   triggerResult            = cms.untracked.InputTag("TriggerResults::HLTRECO"),
+                   triggerSummary           = cms.untracked.InputTag("hltTriggerSummaryAOD::HLTRECO"),
+                   tagTriggerResult         = cms.untracked.InputTag("TriggerResults::HLT"),
+                   tagTriggerSummary        = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
+                   triggerProcess   = cms.string("TEST"),
+                   L3Candidates             = cms.untracked.InputTag("hltIterL3MuonCandidates"),
+                   L3CandidatesNoID         = cms.untracked.InputTag("hltIterL3MuonsNoID"),
+                   L2Candidates             = cms.untracked.InputTag("hltL2MuonCandidates"),
+                   L1Candidates             = cms.untracked.InputTag('hltGtStage2Digis','Muon'),
+                   TkMuCandidates           = cms.untracked.InputTag("hltIterL3OIL3MuonCandidates"),
+                   L3OIMuCandidates         = cms.untracked.InputTag("hltIterL3OIL3MuonCandidates"),
+                   L3IOMuCandidates         = cms.untracked.InputTag("hltIterL3IOFromL2MuonCandidates"),
+                   MuonLinksTag = cms.untracked.InputTag("hltIterL3MuonsFromL2LinksCombination"),
+                   globalMuons = cms.InputTag("globalMuons"),
+                   theTrackOI               = cms.untracked.InputTag("hltIterL3OIMuonTrackSelectionHighPurity"),
+                   theTrackIOL2             = cms.untracked.InputTag("hltIter3IterL3MuonMerged"),
+                   theTrackIOL1             = cms.untracked.InputTag("hltIter3IterL3FromL1MuonMerged"),
+                   l3filterLabel    = cms.string("hltL3fL1sMu22Or25L1f0L2f10QL3Filtered27Q"),
+                   lumiScalerTag            = cms.untracked.InputTag("scalersRawToDigi"),
+                   puInfoTag                = cms.untracked.InputTag("addPileupInfo"),
+                   genParticlesTag          = cms.untracked.InputTag("genParticles"),
+                   doOffline                = cms.untracked.bool(True),
+                   seedsForOIFromL2         = cms.InputTag("hltIterL3OISeedsFromL2Muons"),
+                   theTrajOI                = cms.untracked.InputTag("hltIterL3OITrackCandidates"),
+                   simTracks            = cms.untracked.InputTag("mix","MergedTrackTruth", "HLT"), 
+)
+
+process.TFileService = cms.Service("TFileService",
+                               fileName = cms.string("muonNtuple_phase2_MC.root"),
+                               closeFileFast = cms.untracked.bool(False)
+)
+process.HLTValidation = cms.EndPath(
+    process.muonNtuples
+)
+
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False), SkipEvent = cms.untracked.vstring('ProductNotFound') )
+process.options.allowUnscheduled = cms.untracked.bool(True)
+
+
 #print process.dumpPython() 
 
 
@@ -6411,8 +6462,8 @@ process.HLTIter2PSetTrajectoryFilterIT = cms.PSet(
 ##process.schedule = cms.Schedule(process.HLT_IsoMu24_v11,process.validatorpath,process.HLTOutput, process.FastTimerOutput, process.RECOSIMoutput_step )
 
 #### HLT Reco and standard validation
-process.schedule = cms.Schedule(process.HLT_IsoMu24_v11, process.HLT_Mu50_v13, process.validatorpath,process.HLTOutput)
-
+#process.schedule = cms.Schedule(process.HLT_IsoMu24_v11, process.HLT_Mu50_v13, process.validatorpath,process.HLTOutput)
+process.schedule = cms.Schedule(process.HLT_IsoMu24_v11, process.HLT_Mu50_v13, process.validatorpath, process.HLTValidation)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
@@ -6453,51 +6504,3 @@ process = customiseEarlyDelete(process)
 ## enable to test the new HLT event content
 #from HLTrigger.Configuration.Tools.hltTDREventContent import dropInputProducts
 #dropInputProducts(process.source)
-from RecoMuon.TrackingTools.MuonServiceProxy_cff import *
-
-process.dump = cms.EDAnalyzer('EventContentAnalyzer')
-process.MessageLogger = cms.Service("MessageLogger",
-       debugModules = cms.untracked.vstring('MultiTrackValidator')
-)
-
-process.muonNtuples = cms.EDAnalyzer("MuonNtuples",
-                   MuonServiceProxy,
-                   offlineVtx               = cms.InputTag("offlinePrimaryVertices"),
-                   offlineMuons             = cms.InputTag("muons"),
-                   triggerResult            = cms.untracked.InputTag("TriggerResults::MYHLT"),
-                   triggerSummary           = cms.untracked.InputTag("hltTriggerSummaryAOD::MYHLT"),
-                   tagTriggerResult         = cms.untracked.InputTag("TriggerResults::HLT"),
-                   tagTriggerSummary        = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
-                   triggerProcess   = cms.string("TEST"),
-                   L3Candidates             = cms.untracked.InputTag("hltIterL3MuonCandidates"),
-                   L3CandidatesNoID         = cms.untracked.InputTag("hltIterL3MuonsNoID"),
-                   L2Candidates             = cms.untracked.InputTag("hltL2MuonCandidates"),
-                   L1Candidates             = cms.untracked.InputTag('hltGtStage2Digis','Muon'),
-                   TkMuCandidates           = cms.untracked.InputTag("hltIterL3OIL3MuonCandidates"),
-                   L3OIMuCandidates         = cms.untracked.InputTag("hltIterL3OIL3MuonCandidates"),
-                   L3IOMuCandidates         = cms.untracked.InputTag("hltIterL3IOFromL2MuonCandidates"),
-                   MuonLinksTag = cms.untracked.InputTag("hltIterL3MuonsFromL2LinksCombination"),
-                   globalMuons = cms.InputTag("globalMuons"),
-                   theTrackOI               = cms.untracked.InputTag("hltIterL3OIMuonTrackSelectionHighPurity"),
-                   theTrackIOL2             = cms.untracked.InputTag("hltIter3IterL3MuonMerged"),
-                   theTrackIOL1             = cms.untracked.InputTag("hltIter3IterL3FromL1MuonMerged"),
-                   l3filterLabel    = cms.string("hltL3fL1sMu22Or25L1f0L2f10QL3Filtered27Q"),
-                   lumiScalerTag            = cms.untracked.InputTag("scalersRawToDigi"),
-                   puInfoTag                = cms.untracked.InputTag("addPileupInfo"),
-                   genParticlesTag          = cms.untracked.InputTag("genParticles"),
-                   doOffline                = cms.untracked.bool(True),
-                   seedsForOIFromL2         = cms.InputTag("hltIterL3OISeedsFromL2Muons"),
-                   theTrajOI                = cms.untracked.InputTag("hltIterL3OITrackCandidates"),
-                   simTracks            = cms.untracked.InputTag("mix","MergedTrackTruth", "HLT"), 
-)
-
-process.TFileService = cms.Service("TFileService",
-                               fileName = cms.string("muonNtuple_phase2_MC.root"),
-                               closeFileFast = cms.untracked.bool(False)
-)
-process.HLTValidation = cms.EndPath(
-    process.muonNtuples
-)
-
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False), SkipEvent = cms.untracked.vstring('ProductNotFound') )
-process.options.allowUnscheduled = cms.untracked.bool(True)
