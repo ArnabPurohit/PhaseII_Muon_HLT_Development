@@ -292,7 +292,6 @@ MuonNtuples::MuonNtuples(const edm::ParameterSet& cfg):
   doOffline_                 (cfg.getUntrackedParameter<bool>("doOffline"))
 {
 
-  //theService = new MuonServiceProxy(cfg.getParameter<edm::ParameterSet>("ServiceParameters"));
   theService = new MuonServiceProxy(cfg.getParameter<edm::ParameterSet>("ServiceParameters"), consumesCollector());
   //usesResource("TFileService");
 
@@ -329,7 +328,7 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
   event_.runNumber             = event.id().run();
   event_.luminosityBlockNumber = event.id().luminosityBlock();
   event_.eventNumber           = event.id().event();
-  std::cout << "Processing event " << event.id().event() << std::endl;
+
   // Fill vertex info
   if (doOffline_){
     edm::Handle<reco::VertexCollection> vertices; 
@@ -360,8 +359,6 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
           event_.instLumi = lumiScaler->begin()->instantLumi();
       } 
     }
-    //}
-
 
   // Fill PU info
   if (!event.isRealData()) {
@@ -529,14 +526,8 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
       L3MuonTrigObjects.push_back(foundObject);
     }
   }
-    fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
-/*
-     // fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
-       try{
-	 //std::cout<<"total muons in the event: "<<muons->size()<<std::endl;
-         fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
-         }
-    catch(...){}*/
+
+  fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
 
   } // close if(doOffline)
 
@@ -555,7 +546,6 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
     edm::Handle<std::vector<Trajectory>> trajOI;
     if(event.getByToken(theTrajOIToken_, trajOI)){
       for(std::vector<Trajectory>::const_iterator t=trajOI->begin(); t!=trajOI->end(); t++){
-	//	std::cout <<"Found hits: "<< t->foundHits() << std::endl;
       }
     }
 
@@ -567,7 +557,7 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
     // Seeds from TSG for OI
     //edm::Handle<std::vector<SeedCandidate>> collseed;
     //if(event.getByToken(theSeedLabel, collseed)){
-    //	fillSeeds(collseed, event);
+    //  fillSeeds(collseed, event);
     //}
 
     // SimTracks
@@ -741,10 +731,11 @@ void MuonNtuples::fillSeeds(const edm::Handle<std::vector<SeedCandidate>>  & col
     Seed.dR_mom = (*collseed)[j].dR_mom;
 
     event_.seeds.push_back(Seed);
-    //    std::cout << "Layer "<< (*collseed)[j].layerId << " #" << (*collseed)[j].layerNum <<" type(0:hitless,1:hitbased) "<< (*collseed)[j].hitBased<<":  l2_pt = " << (*collseed)[j].pt <<"  l2_eta = " << (*collseed)[j].eta << "  l2_phi = " << (*collseed)[j].phi << "  l2_idx = " << (*collseed)[j].l2_idx << std::endl;
   }
 
-  }*/
+}*/
+
+
 void MuonNtuples::fillHltTrack(const edm::Handle<reco::TrackCollection>  & trackm ,
 			       const edm::Event                          & tevent ,
 			       TrackCollectionType type)
