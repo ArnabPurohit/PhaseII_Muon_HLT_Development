@@ -105,7 +105,8 @@ class MuonNtuples : public edm::EDAnalyzer {
                bool 
               );
   
-  void fillMuons(const edm::Handle<reco::MuonCollection> &,
+  void fillMuons(const edm::Handle<pat::MuonCollection> &,
+                 //const edm::Handle<reco::MuonCollection> &,// for AODSIM
                   trigger::TriggerObjectCollection & hltl3muons,
                  const edm::Handle<reco::RecoChargedCandidateCollection> & l3cands,
                  const edm::Handle<reco::MuonTrackLinksCollection>& links,
@@ -144,7 +145,8 @@ class MuonNtuples : public edm::EDAnalyzer {
   edm::InputTag offlinePVTag_;
   edm::EDGetTokenT<reco::VertexCollection> offlinePVToken_;
   edm::InputTag offlineMuonTag_;
-  edm::EDGetTokenT<std::vector<reco::Muon>> offlineMuonToken_;
+  //edm::EDGetTokenT<std::vector<reco::Muon>> offlineMuonToken_; // for AODSIM
+  edm::EDGetTokenT<std::vector<pat::Muon>> offlineMuonToken_;
   /// file service
   edm::Service<TFileService> outfile_;
 
@@ -229,8 +231,9 @@ class MuonNtuples : public edm::EDAnalyzer {
 MuonNtuples::MuonNtuples(const edm::ParameterSet& cfg): 
   offlinePVTag_           (cfg.getParameter<edm::InputTag>("offlineVtx")), 
   offlinePVToken_         (consumes<reco::VertexCollection>(offlinePVTag_)), 
-  offlineMuonTag_         (cfg.getParameter<edm::InputTag>("offlineMuons")), 
-    offlineMuonToken_       (consumes<std::vector<reco::Muon>>(offlineMuonTag_)), 
+  offlineMuonTag_         (cfg.getParameter<edm::InputTag>("offlineMuons")),
+  //offlineMuonToken_       (consumes<std::vector<reco::Muon>>(offlineMuonTag_)), // for AODSIM
+  offlineMuonToken_       (consumes<std::vector<pat::Muon>>(offlineMuonTag_)),
 
 //********************************************INCLUDED********************************************//
   theTrackOITag_          (cfg.getUntrackedParameter<edm::InputTag>("theTrackOI")),
@@ -326,7 +329,7 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
   event_.runNumber             = event.id().run();
   event_.luminosityBlockNumber = event.id().luminosityBlock();
   event_.eventNumber           = event.id().event();
-
+  std::cout << "Processing event " << event.id().event() << std::endl;
   // Fill vertex info
   if (doOffline_){
     edm::Handle<reco::VertexCollection> vertices; 
@@ -339,7 +342,8 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
     const reco::Vertex           & pv      = vertices->at(0);
 
   // Handle the offline muon collection and fill offline muons
-    edm::Handle<std::vector<reco::Muon> > muons;
+    //edm::Handle<std::vector<reco::Muon> > muons; // for AODSIM
+    edm::Handle<std::vector<pat::Muon> > muons;
     event.getByToken(offlineMuonToken_, muons);
     //fillMuons(muons, pv, event);
 
@@ -492,23 +496,25 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
   edm::Handle<reco::MuonTrackLinksCollection> links;
   event.getByToken(theLinksToken_, links);
 
-  edm::Handle<reco::TrackExtraCollection> trackMuons;
-  event.getByToken(theMuonsWithHitsToken_, trackMuons);
+  //edm::Handle<reco::TrackExtraCollection> trackMuons;
+  //event.getByToken(theMuonsWithHitsToken_, trackMuons);
 
   edm::Handle<trigger::TriggerEvent> triggerSummary;
   event.getByToken(triggerSummToken_, triggerSummary);
 
 
-  edm::Handle<reco::MuonCollection> MuonCol;
+  //edm::Handle<reco::MuonCollection> MuonCol; // for AODSIM
+  edm::Handle<pat::MuonCollection> MuonCol;
   event.getByToken(offlineMuonToken_, MuonCol);  
 
 
 
-  reco::MuonCollection Muons;
+  //reco::MuonCollection Muons; // for AODSIM
+  pat::MuonCollection Muons;
   for(auto const& mu : *MuonCol) Muons.push_back(mu);
 
-  reco::TrackExtraCollection trackerMuons;
-  for(auto const& tkmu : *trackMuons) trackerMuons.push_back(tkmu);
+  //reco::TrackExtraCollection trackerMuons;
+  //for(auto const& tkmu : *trackMuons) trackerMuons.push_back(tkmu);
 
   size_t L3MuonFilterIndex = (*triggerSummary).filterIndex(edm::InputTag("Mu","","TEST"));//(edm::InputTag( "hltL3fL1sMu22Or25L1f0L2f10QL3Filtered27Q","","TEST"));
   
@@ -523,14 +529,14 @@ void MuonNtuples::analyze (const edm::Event &event, const edm::EventSetup &event
       L3MuonTrigObjects.push_back(foundObject);
     }
   }
-
-
+    fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
+/*
      // fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
        try{
 	 //std::cout<<"total muons in the event: "<<muons->size()<<std::endl;
          fillMuons(muons,L3MuonTrigObjects,l3cands,links, pv, event);
          }
-    catch(...){}
+    catch(...){}*/
 
   } // close if(doOffline)
 
@@ -772,7 +778,8 @@ void MuonNtuples::fillHltTrack(const edm::Handle<reco::TrackCollection>  & track
 //****************************************************************************************************//
 
 // ---------------------------------------------------------------------
-void MuonNtuples::fillMuons(const edm::Handle<reco::MuonCollection>       & muons ,
+void MuonNtuples::fillMuons(const edm::Handle<pat::MuonCollection>       & muons ,
+                            //const edm::Handle<reco::MuonCollection>       & muons , // for AODSIM
                             trigger::TriggerObjectCollection & hltl3muons,
                             const edm::Handle<reco::RecoChargedCandidateCollection> & l3cands,
                             const edm::Handle<reco::MuonTrackLinksCollection>& links,
@@ -785,7 +792,8 @@ void MuonNtuples::fillMuons(const edm::Handle<reco::MuonCollection>       & muon
 
 
   int n_mu = 0;
-  for(std::vector<reco::Muon>::const_iterator mu1=muons->begin(); mu1!=muons->end(); ++mu1) 
+  //for(std::vector<reco::Muon>::const_iterator mu1=muons->begin(); mu1!=muons->end(); ++mu1) // for AODSIM
+  for(std::vector<pat::Muon>::const_iterator mu1=muons->begin(); mu1!=muons->end(); ++mu1)
   { 
 
     n_mu++;

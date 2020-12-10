@@ -8,8 +8,8 @@ config = config()
 config.JobType.pluginName   = 'Analysis'
 config.JobType.outputFiles  = ['muonNtuple_phase2_MC.root']
 
-config.Data.unitsPerJob     = 1000
-config.Data.totalUnits      = 100000
+config.Data.unitsPerJob     = 10
+config.Data.totalUnits      = 1000
 
 config.Data.splitting       = 'EventAwareLumiBased'
 
@@ -33,7 +33,8 @@ config.JobType.psetName    = 'cfgs/step3_HLT_muons_TRK_v6_1.py'
 config.General.requestName = tag
 config.General.transferLogs = True
 
-config.Data.inputDataset = '/DYToLL_M-50_TuneCP5_14TeV-pythia8/PhaseIITDRSpring19DR-PU140_pilot_106X_upgrade2023_realistic_v3-v1/AODSIM'
+#config.Data.inputDataset = '/DYToLL_M-50_TuneCP5_14TeV-pythia8/PhaseIITDRSpring19DR-PU140_pilot_106X_upgrade2023_realistic_v3-v1/AODSIM'
+config.Data.inputDataset = '/DYToLL_M-50_TuneCP5_14TeV-pythia8/Phase2HLTTDRWinter20RECOMiniAOD-PU140_pilot_110X_mcRun4_realistic_v3-v2/MINIAODSIM'
 
 #config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSReader'
 
