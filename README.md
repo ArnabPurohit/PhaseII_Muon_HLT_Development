@@ -9,4 +9,6 @@ mv PhaseII_Muon_HLT_Development/SimMuon .
 scram b -j 10
 cd PhaseII_Muon_HLT_Development
 cmsRun cfgs/step3_HLT_muons_TRK_v6_1.py
+
+pip3 install --user uproot4 awkward1 dask[distributed] tqdm mplhep
 ```
